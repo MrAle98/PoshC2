@@ -73,7 +73,7 @@ if [[ ! -d "$POSH_DIR" ]]; then
     # Git cloning PoshC2
     echo -e "\n[+] Installing PoshC2 in \"$POSH_DIR\" for branch \"$GIT_BRANCH\"\n"
     mkdir -p `dirname $POSH_DIR`
-    git clone -b "$GIT_BRANCH" https://github.com/nettitude/PoshC2 "$POSH_DIR"
+    git clone -b "$GIT_BRANCH" https://github.com/MrAle98/PoshC2 "$POSH_DIR"
 else
     pushd "$POSH_DIR" >/dev/null
     git fetch >/dev/null 2>&1
