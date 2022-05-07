@@ -37,11 +37,11 @@ def load_module_native(module_name, subdir=""):
 
 def load_module_sharp(module_name, subdir=""):
     if module_name.startswith("/"):
-        print_compile_time(module_name)
+#        print_compile_time(module_name)
         module_source = open(module_name, 'r+b')
     else:
         module_full_filepath = f"{ModulesDirectory}{subdir}{module_name}"
-        print_compile_time(module_full_filepath)
+#        print_compile_time(module_full_filepath)
         module_source = open(module_full_filepath, 'r+b')
     return base64.b64encode(module_source.read()).decode("utf-8")
 

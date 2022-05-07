@@ -386,6 +386,7 @@ def newdb(db):
         outFile.close()
 
     C2 = get_c2server_all()
+
     urlId = new_urldetails("default", C2.PayloadCommsHost, C2.DomainFrontHeader, "", "", "", "")
     newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer, get_newimplanturl(), PayloadsDirectory, URLID=urlId)
 
@@ -407,6 +408,8 @@ def newdb(db):
     insert_hosted_file("%s_rg" % QuickCommandURI, "%srg_sct.xml" % (PayloadsDirectory), "text/html", "No", "Yes")
     insert_hosted_file("%s_cs" % QuickCommandURI, "%scs_sct.xml" % (PayloadsDirectory), "text/html", "No", "Yes")
     insert_hosted_file("%s_py" % QuickCommandURI, "%saes.py" % (PayloadsDirectory), "text/html", "No", "Yes")
+    insert_hosted_file("%s_cs_drop" % QuickCommandURI, "%sdropper_cs.exe" % (PayloadsDirectory), "text/html", "Yes", "Yes")
+    insert_hosted_file("%s_ps_sharp_drop" % QuickCommandURI, "%ssharp_loader.ps1" % (PayloadsDirectory), "text/html", "No", "Yes")
 
 
 def existingdb(db):
@@ -447,7 +450,6 @@ def existingdb(db):
         insert_hosted_file("%s_rg" % QuickCommandURI, "%srg_sct.xml" % (PayloadsDirectory), "text/html", "No", "Yes")
         insert_hosted_file("%s_cs" % QuickCommandURI, "%scs_sct.xml" % (PayloadsDirectory), "text/html", "No", "Yes")
         insert_hosted_file("%s_py" % QuickCommandURI, "%saes.py" % (PayloadsDirectory), "text/html", "No", "Yes")
-
 
 def log_c2_messages():
     while True:

