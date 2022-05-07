@@ -1028,6 +1028,8 @@ def do_createdaisypayload(user, command):
     newPayload.CreateRaw("%s_" % name)
     newPayload.CreateDlls("%s_" % name)
     newPayload.CreateEXE("%s_" % name)
+    newPayload.CreatePS("%s_" % name)
+    newPayload.CreatePSInjectors("%s_" % name)
     newPayload.CreateMsbuild("%s_" % name)
     newPayload.CreateDonutShellcode("%s_" % name)
     newPayload.BuildDynamicPayloads("%s_" % name)
