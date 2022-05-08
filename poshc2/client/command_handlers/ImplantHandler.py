@@ -1019,17 +1019,17 @@ def do_createdaisypayload(user, command):
         c += 1
 
     C2 = get_c2server_all()
-    urlId = new_urldetails(name, f"\"http://{daisyurl}\"", "\"\"", "", "", "", "")
+    urlId = new_urldetails(name, daisyurl, "\"\"", "", "", "", "")
     newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer,
                           "%s?d" % get_newimplanturl(), PayloadsDirectory, PowerShellProxyCommand=proxynone, URLID=urlId, PBindPipeName=pbindpipename, PBindSecret=pbindsecret, FCommFileName=fcomm_filename)
     newPayload.PSDropper = (newPayload.PSDropper).replace("$pid;%s" % (daisyurl), "$pid;%s@%s" % (daisyhost.User, daisyhost.Domain))
     newPayload.CreateDroppers("%s_" % name)
     newPayload.CreateShellcode("%s_" % name)
+    newPayload.CreatePS("%s_" % name)
+    newPayload.CreatePSInjectors("%s_" % name)
     newPayload.CreateRaw("%s_" % name)
     newPayload.CreateDlls("%s_" % name)
     newPayload.CreateEXE("%s_" % name)
-    newPayload.CreatePS("%s_" % name)
-    newPayload.CreatePSInjectors("%s_" % name)
     newPayload.CreateMsbuild("%s_" % name)
     newPayload.CreateDonutShellcode("%s_" % name)
     newPayload.BuildDynamicPayloads("%s_" % name)

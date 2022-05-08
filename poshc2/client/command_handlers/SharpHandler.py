@@ -549,6 +549,8 @@ def do_startdaisy(user, command, randomuri):
                               URLID=urlId)
         newPayload.PSDropper = (newPayload.PSDropper).replace("$pid;%s" % (upstream_url), "$pid;%s@%s" % (daisyhost.User, daisyhost.Domain))
         newPayload.CreateDroppers(name)
+        newPayload.createPS(name)
+        newPayload.createPSInjector(name)
         newPayload.CreateRaw(name)
         newPayload.CreateDlls(name)
         newPayload.CreateShellcode(name)

