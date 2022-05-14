@@ -297,6 +297,9 @@ def implant_handler_command_loop(user, printhelp="", autohide=None):
             if command.startswith("createnewshellcode"):
                 do_createnewpayload(user, command, shellcodeOnly=True)
                 continue
+            if command.startswith("createnewcustompayload"):
+                do_createnewpayload(user, command, custom=True)
+                continue
             if command.startswith("createpbindpayload"):
                 do_createnewpayload(user, command, pbindOnly=True)
                 continue
@@ -1038,7 +1041,7 @@ def do_createdaisypayload(user, command):
     clear()
 
 
-def do_createnewpayload(user, command, creds=None, shellcodeOnly=False, pbindOnly=False, linuxOnly=False):
+def do_createnewpayload(user, command, creds=None, shellcodeOnly=False, pbindOnly=False, linuxOnly=False,custom=False):
     params = re.compile("createnewpayload ", re.IGNORECASE)
     params = params.sub("", command)
     creds = None
@@ -1059,7 +1062,11 @@ def do_createnewpayload(user, command, creds=None, shellcodeOnly=False, pbindOnl
     pbindpipename = input(f"PBind Pipe Name (e.g. {PBindPipeName}): ")
     fcomm_filename = input(f"FComm File Name (e.g. {FCommFileName}): ")
     user_agent = input(f"User Agent (e.g. {UserAgent}): ")
-
+    type = None
+    if custom:
+        type = input(f"type (e.g installUtil/EXE): ")
+        shellcodePath = input(f"shellcode file path (base64 encoded): ")
+        arch = input(f"architecture (e.g x86/x64/AnyCPU): ")
     if not pbindsecret:
         pbindsecret = PBindSecret
 
@@ -1099,7 +1106,10 @@ def do_createnewpayload(user, command, creds=None, shellcodeOnly=False, pbindOnl
     urlId = new_urldetails(name, comms_url, domainfront, proxyurl, proxyuser, proxypass, credsexpire)
     newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, user_agent, C2.Referrer, imurl, PayloadsDirectory, URLID=urlId, PBindPipeName=pbindpipename, PBindSecret=pbindsecret, FCommFileName=fcomm_filename)
 
-    if shellcodeOnly:
+    if custom:
+        if type.lower() == "installUtil":
+            newPayload.CreateInstallUtil(shellcodePath,arch,"%s_" %name)
+    elif shellcodeOnly:
         newPayload.CreateDroppers("%s_" % name)
         newPayload.CreateShellcode("%s_" % name)
         newPayload.CreateDonutShellcode("%s_" % name)

@@ -113,6 +113,8 @@ class Payloads(object):
         with open("%samsi-bypass.ps1" % PayloadTemplatesDirectory, 'r') as f:
             content = f.read()
         self.amsiBypass = str(content)
+        with open("%sInstallUtil.cs"%PayloadTemplatesDirectory,'r') as f:
+            self.installUtil = f.read()
     def QuickstartLog(self, txt):
         if not self.quickstart:
             self.quickstart = ''
@@ -621,6 +623,12 @@ class Payloads(object):
                 self.CreateMsbuildFiles(Payload, name)
             if pbindOnly and Payload in (PayloadType.PBind, PayloadType.PBindSharp):
                 self.CreateMsbuildFiles(Payload, name)
+
+    def CreateInstallUtil(self, shellcodePath,name=""):
+        self.QuickstartLog(Colours.END)
+        self.QuickstartLog("installUtil payload files:")
+
+
 
     def CreateCsc(self, name="", pbindOnly=False):
         self.QuickstartLog(Colours.END)
