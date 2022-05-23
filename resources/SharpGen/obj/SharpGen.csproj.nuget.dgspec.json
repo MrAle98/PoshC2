@@ -1,0 +1,73 @@
+{
+  "format": 1,
+  "restore": {
+    "/opt/offsec/AVEvasion/SharpGen/SharpGen.csproj": {}
+  },
+  "projects": {
+    "/opt/offsec/AVEvasion/SharpGen/SharpGen.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/opt/offsec/AVEvasion/SharpGen/SharpGen.csproj",
+        "projectName": "SharpGen",
+        "projectPath": "/opt/offsec/AVEvasion/SharpGen/SharpGen.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/opt/offsec/AVEvasion/SharpGen/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/root/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp2.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp2.1": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp2.1": {
+          "dependencies": {
+            "McMaster.Extensions.CommandLineUtils": {
+              "target": "Package",
+              "version": "[2.2.5, )"
+            },
+            "Microsoft.CodeAnalysis.CSharp": {
+              "target": "Package",
+              "version": "[2.9.0, )"
+            },
+            "Microsoft.NETCore.App": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.1.0, )",
+              "autoReferenced": true
+            },
+            "YamlDotNet": {
+              "target": "Package",
+              "version": "[5.2.1, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/3.1.408/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
