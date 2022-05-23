@@ -1064,9 +1064,9 @@ def do_createnewpayload(user, command, creds=None, shellcodeOnly=False, pbindOnl
     user_agent = input(f"User Agent (e.g. {UserAgent}): ")
     type = None
     if custom:
-        type = input(f"type (e.g installUtil/EXE): ")
+        type = input(f"type (e.g DinstallUtil/DEXE/PinstallUtil/PEXE/Pmsbuild): ")
         shellcodePath = input(f"shellcode file path (base64 encoded): ")
-        arch = input(f"architecture (e.g x86/x64/AnyCPU): ")
+        arch = input(f"architecture (e.g x86/x64): ")
     if not pbindsecret:
         pbindsecret = PBindSecret
 
@@ -1107,8 +1107,16 @@ def do_createnewpayload(user, command, creds=None, shellcodeOnly=False, pbindOnl
     newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, user_agent, C2.Referrer, imurl, PayloadsDirectory, URLID=urlId, PBindPipeName=pbindpipename, PBindSecret=pbindsecret, FCommFileName=fcomm_filename)
 
     if custom:
-        if type.lower() == "installUtil":
+        if type.lower() == "dinstallutil":
             newPayload.CreateInstallUtil(shellcodePath,arch,"%s_" %name)
+        elif type.lower() == "dexe":
+            newPayload.CreateDInvokeEXE(shellcodePath,arch,"%s_"%name)
+        elif type.lower() == "pinstallutil":
+            newPayload.CreatePInvokeInstallUtil(shellcodePath,arch,"%s_" %name)
+        elif type.lower() == "pexe":
+            newPayload.CreatePInvokeEXE(shellcodePath,arch,"%s_" %name)
+        elif type.lower() == "pmsbuild":
+            newPayload.CreatePMsbuild(shellcodePath,arch,"%s_" %name)
     elif shellcodeOnly:
         newPayload.CreateDroppers("%s_" % name)
         newPayload.CreateShellcode("%s_" % name)

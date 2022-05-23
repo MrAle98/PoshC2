@@ -63,7 +63,6 @@ namespace SharpSploit.Generic
 
         private string FormatTable()
         {
-
             return "";
         }
         
