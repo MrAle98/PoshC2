@@ -1105,8 +1105,8 @@ class Payloads(object):
         self.PSInjector = str(content) \
             .replace("#REPLACECONNECTURL#", self.PayloadCommsHost.strip("\"")) \
             .replace("#REPLACEQUICKCOMMAND#", self.QuickCommand) \
-            .replace("#BASE64SHELLCODE#", b64shellcode) \
-            .replace("#BASE64KEY",b64key)
+            .replace("##BASE64SHELLCODE##", b64shellcode) \
+            .replace("##BASE64KEY##",b64key)
 
         with open("%s%s_injector.ps1" % (self.BaseDirectory, name), 'w') as f:
             f.write(self.PSInjector)
