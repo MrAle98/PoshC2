@@ -1065,7 +1065,7 @@ def do_createnewpayload(user, command, creds=None, shellcodeOnly=False, pbindOnl
     type = None
     if custom:
         type = input(f"type (e.g DinstallUtil/DEXE/PinstallUtil/PEXE/Pmsbuild): ")
-        shellcodePath = input(f"shellcode file path (base64 encoded): ")
+        shellcodePath = input(f"shellcode file path (binary format): ")
         arch = input(f"architecture (e.g x86/x64): ")
     if not pbindsecret:
         pbindsecret = PBindSecret
