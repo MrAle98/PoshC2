@@ -1064,7 +1064,7 @@ def do_createnewpayload(user, command, creds=None, shellcodeOnly=False, pbindOnl
     user_agent = input(f"User Agent (e.g. {UserAgent}): ")
     type = None
     if custom:
-        type = input(f"type (e.g DinstallUtil/DEXE/PinstallUtil/PEXE/Pmsbuild): ")
+        type = input(f"type (e.g PEzor/DinstallUtil/DEXE/PinstallUtil/PEXE/Pmsbuild): ")
         shellcodePath = input(f"shellcode file path (binary format): ")
         arch = input(f"architecture (e.g x86/x64): ")
     if not pbindsecret:
@@ -1117,6 +1117,8 @@ def do_createnewpayload(user, command, creds=None, shellcodeOnly=False, pbindOnl
             newPayload.CreatePInvokeEXE(shellcodePath,arch,"%s_" %name)
         elif type.lower() == "pmsbuild":
             newPayload.CreatePMsbuild(shellcodePath,arch,"%s_" %name)
+        elif type.lower() == "pezor":
+            newPayload.CreatePezorsFromShellcode(shellcodePath,arch,"%s_"%name)
     elif shellcodeOnly:
         newPayload.CreateDroppers("%s_" % name)
         newPayload.CreateShellcode("%s_" % name)

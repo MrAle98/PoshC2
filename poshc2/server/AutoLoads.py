@@ -260,8 +260,18 @@ def run_autoloads(command, randomuri, user, loadmodule_command="loadmodule"):
 
 def run_autoloads_sharp(command, randomuri, user, loadmodule_command="loadmodule"):
     command = command.lower().strip()
+
     if command.startswith("run-exe seatbelt"):
         check_module_loaded("Seatbelt.exe", randomuri, user, loadmodule_command=loadmodule_command)
+    elif command.startswith("run-exe sharpkatz"):
+        check_module_loaded("SharpKatz.exe", randomuri, user, loadmodule_command=loadmodule_command)
+    elif command.startswith("run-exe tokenvator"):
+        check_module_loaded("Tokenvator.exe", randomuri, user, loadmodule_command=loadmodule_command)
+    elif command.startswith("run-exe sharprelay"):
+        check_module_loaded("SharpRelay.exe", randomuri, user, loadmodule_command=loadmodule_command)
+    elif command.startswith("run-exe sharpreverseforwarding"):
+        check_module_loaded("SharpSploit.dll", randomuri, user, loadmodule_command=loadmodule_command)
+        check_module_loaded("SharpReverseForwarding.exe", randomuri, user, loadmodule_command=loadmodule_command)
     elif command.startswith("run-exe smbexec.program"):
         check_module_loaded("SExec.exe", randomuri, user, loadmodule_command=loadmodule_command)
     elif command.startswith("run-exe sharpup"):

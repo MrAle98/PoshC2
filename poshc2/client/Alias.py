@@ -17,6 +17,11 @@ cs_alias = [
 
 # Parts of commands to replace if command starts with the key
 cs_replace = [
+    ["sharpsecdump","run-exe SharpSecDump.RegQueryValueDemo SharpSecDump"],
+    ["sharpkatz","run-exe SharpKatz.Program SharpKatz"],
+    ["sharpreverseforwarding","run-exe SharpReverseForwarding.Program SharpReverseForwarding"],
+    ["tokenvator","run-exe Tokenvator.Program Tokenvator"],
+    ["sharprelay","run-exe SharpRelay.Program SharpRelay"],
     ["safetydump", "run-exe SafetyDump.Program SafetyDump"],
     ["sharpup", "run-exe SharpUp.Program SharpUp"],
     ["seatbelt", "run-exe Seatbelt.Program Seatbelt"],
