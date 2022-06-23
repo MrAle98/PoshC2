@@ -2,9 +2,5 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/resources/PEzor" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/resources/PEzor/deps/donut" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/resources/PEzor/deps/inline_syscall" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/resources/PEzor/deps/keystone" vcs="Git" />
   </component>
 </project>
