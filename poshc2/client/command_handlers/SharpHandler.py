@@ -551,12 +551,13 @@ def do_startdaisy(user, command, randomuri):
         newPayload.CreateDroppers(name)
         newPayload.CreatePS(name)
         newPayload.CreateRaw(name)
-        newPayload.CreateDlls(name)
+        #newPayload.CreateDlls(name)
         newPayload.CreateShellcode(name)
         newPayload.CreatePSInjectors(name)
         newPayload.CreateDonutShellcode(name)
-        newPayload.CreateEXE(name)
-        newPayload.CreateMsbuild(name)
+        newPayload.CreatePEzors(name)
+        #newPayload.CreateEXE(name)
+        #newPayload.CreateMsbuild(name)
         print_good("Created new %s daisy payloads" % name)
 
 
