@@ -263,6 +263,10 @@ def run_autoloads_sharp(command, randomuri, user, loadmodule_command="loadmodule
 
     if command.startswith("run-exe seatbelt"):
         check_module_loaded("Seatbelt.exe", randomuri, user, loadmodule_command=loadmodule_command)
+    elif command.startswith("run-exe sharpsecdump"):
+        check_module_loaded("SharpSecDump.exe", randomuri, user, loadmodule_command=loadmodule_command)
+    elif command.startswith("run-exe krbrelayup"):
+        check_module_loaded("KrbRelayUp.exe", randomuri, user, loadmodule_command=loadmodule_command)
     elif command.startswith("run-exe sharpkatz"):
         check_module_loaded("SharpKatz.exe", randomuri, user, loadmodule_command=loadmodule_command)
     elif command.startswith("run-exe tokenvator"):

